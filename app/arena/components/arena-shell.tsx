@@ -3,6 +3,7 @@
 import {
   Bot,
   LayoutPanelTop,
+  LoaderCircle,
   Menu,
   MoreHorizontal,
   PanelLeftClose,
@@ -11,9 +12,15 @@ import {
   Send,
   Trophy,
   UserRound,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 
+import { ModelPicker } from "@/app/arena/components/model-picker";
+import { useModelCatalog } from "@/app/arena/components/use-model-catalog";
+import { useArenaTurn } from "@/app/arena/components/use-arena-turn";
 import { ThemeToggle } from "@/app/theme/toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,16 +33,56 @@ const threads = [
   { title: "SQL query plan review", time: "Aug 14", active: false },
 ];
 
-const models = [
-  { name: "Llama 3.3", shortName: "L", record: "0 / 0" },
-  { name: "Gemini Flash", shortName: "G", record: "0 / 0" },
-  { name: "DeepSeek R1", shortName: "D", record: "0 / 0" },
-];
+function formatSeconds(milliseconds: number | null | undefined): string {
+  return milliseconds == null ? "--" : `${(milliseconds / 1000).toFixed(2)}s`;
+}
+
+function formatSpeed(tokensPerSecond: number | null | undefined): string {
+  return tokensPerSecond == null ? "--" : `${tokensPerSecond.toFixed(1)} t/s`;
+}
 
 export function ArenaShell() {
+  const { isSignedIn, isLoaded: isAuthLoaded } = useUser();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [metricsVisible, setMetricsVisible] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
+  const [draft, setDraft] = useState("");
+  const initializedSelection = useRef(false);
+  const { models: catalog, status: catalogStatus, refresh: refreshCatalog } = useModelCatalog();
+  const models = useMemo(
+    () => catalog.filter((model) => selectedIds.includes(model.id)),
+    [catalog, selectedIds]
+  );
+  const arena = useArenaTurn();
+
+  useEffect(() => {
+    if (catalogStatus === "ready" && !initializedSelection.current) {
+      initializedSelection.current = true;
+      setSelectedIds(catalog.slice(0, 3).map((model) => model.id));
+    }
+  }, [catalog, catalogStatus]);
+
+  const addModel = (modelId: string) => {
+    setSelectedIds((current) =>
+      current.length < 3 && !current.includes(modelId) ? [...current, modelId] : current
+    );
+  };
+
+  const removeModel = (modelId: string) => {
+    setSelectedIds((current) => current.filter((id) => id !== modelId));
+  };
+
+  const submitPrompt = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const prompt = draft.trim();
+    if (!prompt || models.length === 0 || arena.isRunning) return;
+    const accepted = await arena.submit(
+      prompt,
+      models.map((model) => model.id)
+    );
+    if (accepted) setDraft("");
+  };
 
   return (
     <main
@@ -79,10 +126,10 @@ export function ArenaShell() {
             <Trophy aria-hidden />
             <span>Leaderboard</span>
           </button>
-          <button className="sidebar-nav-item" type="button">
+          <Link className="sidebar-nav-item" href="/models">
             <Bot aria-hidden />
             <span>Models</span>
-          </button>
+          </Link>
         </nav>
 
         <section className="thread-list" aria-labelledby="thread-list-title">
@@ -108,9 +155,31 @@ export function ArenaShell() {
         </section>
 
         <div className="sidebar-footer">
-          <Button type="button" variant="ghost" size="icon" aria-label="Account" disabled>
-            <UserRound aria-hidden />
-          </Button>
+          {isAuthLoaded && isSignedIn ? (
+            <UserButton
+              showName
+              appearance={{
+                elements: {
+                  rootBox: "arena-user-button",
+                  userButtonTrigger: "arena-user-trigger",
+                  userButtonAvatarBox: "arena-user-avatar",
+                },
+              }}
+            />
+          ) : (
+            <SignInButton mode="modal">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="account-sign-in"
+                disabled={!isAuthLoaded}
+              >
+                <UserRound aria-hidden />
+                <span>Sign in</span>
+              </Button>
+            </SignInButton>
+          )}
           <ThemeToggle />
         </div>
       </aside>
@@ -129,20 +198,16 @@ export function ArenaShell() {
           </Button>
           <div className="thread-identity">
             <p className="breadcrumb">Arena / Your threads</p>
-            <h1>Mutexes, simply</h1>
+            <h1>{arena.prompt ?? "New comparison"}</h1>
           </div>
           <div className="topbar-actions">
             <div className="model-records" aria-label="Thread model records">
               {models.map((model) => (
-                <div
-                  className="model-record"
-                  key={model.name}
-                  title={`${model.name}: won ${model.record}`}
-                >
+                <div className="model-record" key={model.id} title={`${model.name}: won 0 / 0`}>
                   <span className="model-initial" aria-hidden>
-                    {model.shortName}
+                    {model.name.slice(0, 1)}
                   </span>
-                  <span className="model-record-value">{model.record}</span>
+                  <span className="model-record-value">0 / 0</span>
                 </div>
               ))}
             </div>
@@ -155,9 +220,14 @@ export function ArenaShell() {
         <div className="arena-scroll-region">
           <section className="arena-intro" aria-labelledby="arena-title">
             <div>
-              <p className="eyebrow">Sample thread</p>
-              <h2 id="arena-title">Compare an explanation</h2>
-              <p>Ask the same question once, then choose the response that reads best.</p>
+              <p className="eyebrow">Live arena</p>
+              <h2 id="arena-title">
+                {arena.prompt ? "Compare the answers" : "Start a comparison"}
+              </h2>
+              <p>
+                {arena.prompt ??
+                  "Ask the same question once, then choose the response that reads best."}
+              </p>
             </div>
             <Button
               type="button"
@@ -169,13 +239,22 @@ export function ArenaShell() {
             </Button>
           </section>
 
-          <section className="response-grid" aria-label="Model response placeholders">
+          {arena.error ? (
+            <p className="arena-error" role="alert">
+              {arena.error}
+            </p>
+          ) : null}
+
+          <section className="response-grid" aria-label="Model responses">
             {models.map((model) => (
-              <Card className="response-card" key={model.name}>
+              <Card
+                className={`response-card ${arena.winnerId === arena.answers[model.id]?.id ? "is-winner" : ""}`}
+                key={model.id}
+              >
                 <CardHeader className="response-card-header">
                   <div className="response-model">
                     <span className="model-initial" aria-hidden>
-                      {model.shortName}
+                      {model.name.slice(0, 1)}
                     </span>
                     <CardTitle>{model.name}</CardTitle>
                   </div>
@@ -190,55 +269,144 @@ export function ArenaShell() {
                   </Button>
                 </CardHeader>
                 <CardContent className="response-card-content">
-                  <p className="response-placeholder">Ready for a model response.</p>
-                  <div className="response-placeholder-lines" aria-hidden>
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-11/12" />
-                    <Skeleton className="h-3 w-4/5" />
-                  </div>
+                  {arena.winnerId === arena.answers[model.id]?.id ? (
+                    <p className="winner-label">
+                      <Trophy aria-hidden /> Winner
+                    </p>
+                  ) : null}
+                  {arena.answers[model.id]?.content ? (
+                    <p className="response-copy">{arena.answers[model.id].content}</p>
+                  ) : null}
+                  {arena.answers[model.id]?.status === "queued" ||
+                  arena.answers[model.id]?.status === "streaming" ? (
+                    <div className="response-loading" role="status">
+                      <LoaderCircle aria-hidden />{" "}
+                      {arena.answers[model.id].status === "queued" ? "Connecting…" : "Answering…"}
+                    </div>
+                  ) : null}
+                  {arena.answers[model.id]?.status === "error" ? (
+                    <div className="response-failure" role="status">
+                      <p className="response-error">{arena.answers[model.id].error}</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={arena.isRunning}
+                        onClick={() => void arena.retry(model.id)}
+                      >
+                        Retry model
+                      </Button>
+                    </div>
+                  ) : null}
+                  {!arena.answers[model.id] ? (
+                    <>
+                      <p className="response-placeholder">Ready for a model response.</p>
+                      <div className="response-placeholder-lines" aria-hidden>
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-11/12" />
+                        <Skeleton className="h-3 w-4/5" />
+                      </div>
+                    </>
+                  ) : null}
                 </CardContent>
                 <CardFooter className="response-card-footer">
                   {metricsVisible ? (
                     <div className="response-metrics">
-                      <span>TTFT --</span>
-                      <span>Speed --</span>
-                      <span>Tokens --</span>
+                      <span>TTFT {formatSeconds(arena.answers[model.id]?.timeToFirstTokenMs)}</span>
+                      <span>Speed {formatSpeed(arena.answers[model.id]?.tokensPerSecond)}</span>
+                      <span>Tokens {arena.answers[model.id]?.totalTokens ?? "--"}</span>
                     </div>
                   ) : (
                     <span className="metric-hidden">Metrics hidden</span>
                   )}
-                  <Button type="button" variant="outline" size="sm" disabled>
-                    Pick response
+                  <Button
+                    type="button"
+                    variant={
+                      arena.winnerId === arena.answers[model.id]?.id ? "secondary" : "outline"
+                    }
+                    size="sm"
+                    disabled={
+                      arena.completedCount < 2 ||
+                      arena.answers[model.id]?.status !== "completed" ||
+                      arena.isVoting ||
+                      arena.winnerId !== null
+                    }
+                    onClick={() => {
+                      const answer = arena.answers[model.id];
+                      if (answer) void arena.vote(answer.id);
+                    }}
+                  >
+                    {arena.winnerId === arena.answers[model.id]?.id ? "Winner" : "Pick response"}
                   </Button>
                 </CardFooter>
               </Card>
             ))}
+            {catalogStatus === "loading" ? (
+              <p className="catalog-state">Loading free models…</p>
+            ) : null}
+            {catalogStatus === "error" ? (
+              <div className="catalog-state" role="status">
+                <p>The model list is unavailable right now.</p>
+                <Button type="button" variant="outline" size="sm" onClick={refreshCatalog}>
+                  Retry
+                </Button>
+              </div>
+            ) : null}
+            {catalogStatus === "ready" && models.length === 0 ? (
+              <p className="catalog-state">Add at least one model to start comparing answers.</p>
+            ) : null}
           </section>
         </div>
 
-        <form className="prompt-composer" onSubmit={(event) => event.preventDefault()}>
-          <div className="composer-models" aria-label="Selected placeholder models">
+        <form className="prompt-composer" onSubmit={submitPrompt}>
+          <div className="composer-models" aria-label="Selected models">
             {models.map((model) => (
-              <span className="composer-model" key={model.name}>
+              <span className="composer-model" key={model.id}>
                 <span className="model-initial" aria-hidden>
-                  {model.shortName}
+                  {model.name.slice(0, 1)}
                 </span>
                 {model.name}
+                <button
+                  className="composer-model-remove"
+                  type="button"
+                  aria-label={`Remove ${model.name}`}
+                  onClick={() => removeModel(model.id)}
+                  disabled={arena.isRunning}
+                >
+                  <X aria-hidden />
+                </button>
               </span>
             ))}
-            <Button type="button" variant="ghost" size="sm" disabled>
-              <Plus aria-hidden />
-              Add model
-            </Button>
+            <ModelPicker
+              catalog={catalog}
+              selectedIds={selectedIds}
+              status={catalogStatus}
+              onSelect={addModel}
+              onRetry={refreshCatalog}
+              disabled={arena.isRunning}
+            />
           </div>
           <textarea
             className="composer-input"
             aria-label="Prompt"
             placeholder="Ask the arena anything"
             rows={2}
+            value={draft}
+            maxLength={12000}
+            disabled={arena.isRunning}
+            onChange={(event) => setDraft(event.target.value)}
           />
-          <Button type="submit" size="icon" aria-label="Send prompt" disabled>
-            <Send aria-hidden />
+          <Button
+            type="submit"
+            size="icon"
+            aria-label="Send prompt"
+            disabled={models.length === 0 || !draft.trim() || arena.isRunning}
+          >
+            {arena.isRunning ? (
+              <LoaderCircle className="is-spinning" aria-hidden />
+            ) : (
+              <Send aria-hidden />
+            )}
           </Button>
         </form>
       </section>

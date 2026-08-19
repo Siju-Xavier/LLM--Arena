@@ -22,8 +22,8 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | 2   | Coding standards & tooling                  | Foundation | done        |
 | 3   | Data model                                  | Foundation | done        |
 | 4   | Design & look                               | Foundation | done        |
-| 5   | Model picker                                | Slice 1    | not started |
-| 6   | Send a prompt, parallel streams, and voting | Slice 1    | not started |
+| 5   | Model picker                                | Slice 1    | in progress |
+| 6   | Send a prompt, parallel streams, and voting | Slice 1    | in progress |
 | 7   | App shell & thread history                  | Slice 2    | in progress |
 | 8   | Public thread visibility & sharing          | Slice 3    | not started |
 | 9   | Leaderboard: global & personal              | Slice 4    | not started |
@@ -96,15 +96,20 @@ Decision: a café scoreboard, not a neon dashboard. Dark espresso is the default
 An "Add model" popover pulling OpenRouter's live free-tier list, sorted by context window, capped at three models, defaulting to all three selected, with removable chips next to the prompt box. Also render that same catalog as a simple `/models` page, name, context window, and pricing for each one, so anyone can browse the full list without opening the picker.
 
 - [x] Decide the approach (build the responsive shell first with intentionally static preview data; real thread history, model records, requests, and votes remain owned by later slices)
-- [ ] Build it
+- [x] Build it
+  - [x] Server-only OpenRouter catalog fetch, filtered to text models with zero pricing, sorted by context window, and cached for five minutes
+  - [x] Shared `/api/models` catalog endpoint with a small validated response shape and a plain retryable failure message
+  - [x] Add-model popover with local selection, a three-model cap, and default selection of the first three catalog results
+  - [x] Removable model chips wired into the placeholder response columns and thread-record strip
+  - [x] Public `/models` catalog page using the same live data source
   - [x] Persistent responsive top bar and collapsible navigation shell
   - [x] Preview thread list, thread title, and equal model records
   - [x] Placeholder response columns and prompt composer for the future arena loop
   - [x] UI-only controls for sidebar and metrics visibility
   - [ ] Connect signed-in thread history and persisted records
-  - [ ] Wire live model catalog, streaming, and votes from slices 5 and 6
+  - [ ] Wire streaming and votes from slice 6
   - [x] Typecheck, lint, and build
-  - [ ] Inspect desktop and mobile layouts in a browser
+  - [ ] Inspect desktop and mobile layouts in a browser (dev-server startup verified; this sandbox cannot reach its own loopback server from a separate verification command)
 
 ### 6. Send a prompt, parallel streams, and voting
 
@@ -114,8 +119,20 @@ Arcjet sits in front of this endpoint before any model is ever called: rate limi
 
 Every prompt sent, every answer finishing, and every vote cast should be tracked as a real PostHog event, so there's an honest funnel from prompt to answer to vote. A model failing should also be logged properly on the server, not just shown to the user and forgotten. Separately from that funnel, every actual model call should also be wrapped so PostHog captures its own real tokens, cost, and latency per call, that's PostHog's own LLM analytics, not the same thing as the funnel events or the numbers already shown on the response card.
 
-- [ ] Decide the approach
+- [x] Decide the approach (create one persisted turn first, then start one authenticated, independently measured SSE request per pending answer; derive each model's conversation server-side and commit a single immutable vote transactionally)
 - [ ] Build it
+  - [x] Add explicit answer lifecycle and completion metadata to the data model
+  - [x] Create authenticated turns with one pending answer per selected free model
+  - [x] Stream each answer independently through an app-owned SSE protocol
+  - [x] Persist answer content, failures, TTFT, speed, and token usage
+  - [x] Continue follow-ups through each model's own conversation history
+  - [x] Enforce Arcjet bot, shield, prompt-injection, and aggregate per-user usage rules
+  - [x] Capture prompt, answer, failure, vote, and per-call LLM analytics in PostHog
+  - [x] Allow exactly one vote after at least two successful answers
+  - [x] Wire the composer, response cards, independent errors, retries, metrics, and winner state
+  - [x] Apply the answer-lifecycle migration to the configured database
+  - [x] Typecheck, lint, and production build
+  - [ ] Exercise a signed-in multi-model prompt and vote in a real browser (production server starts successfully; this sandbox cannot reach its own loopback server from a separate verification command)
 
 ## Slice 2: App shell & thread history
 

@@ -51,6 +51,7 @@ export async function streamChatCompletion(
       model: modelId,
       messages,
       stream: true,
+      stream_options: { include_usage: true },
     }),
   });
 
