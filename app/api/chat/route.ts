@@ -253,6 +253,7 @@ export async function POST(request: NextRequest) {
       where: { threadId: answer.turn.threadId },
       orderBy: { createdAt: "asc" },
       select: {
+        id: true,
         prompt: true,
         answers: {
           where: { modelId: answer.modelId, status: "COMPLETED" },
@@ -261,7 +262,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    const messages = buildModelConversation(turns);
+    const messages = buildModelConversation(turns, answer.turnId);
     const providerStream = await streamChatCompletion(answer.modelId, messages);
     const stream = createAnswerStream({
       providerStream,

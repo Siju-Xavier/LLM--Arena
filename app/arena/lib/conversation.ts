@@ -1,18 +1,31 @@
 import type { ChatMessage } from "@/app/arena/lib/openrouter";
 
 interface HistoricalTurn {
+  readonly id: string;
   readonly prompt: string;
   readonly answers: readonly { readonly content: string }[];
 }
 
-export function buildModelConversation(turns: readonly HistoricalTurn[]): readonly ChatMessage[] {
-  return turns.flatMap((turn) => {
+export function buildModelConversation(
+  turns: readonly HistoricalTurn[],
+  currentTurnId: string
+): readonly ChatMessage[] {
+  const messages: ChatMessage[] = [];
+
+  for (const turn of turns) {
+    if (turn.id === currentTurnId) {
+      messages.push({ role: "user", content: turn.prompt });
+      break;
+    }
+
     const answer = turn.answers[0];
-    return answer
-      ? [
-          { role: "user" as const, content: turn.prompt },
-          { role: "assistant" as const, content: answer.content },
-        ]
-      : [{ role: "user" as const, content: turn.prompt }];
-  });
+    if (!answer) continue;
+
+    messages.push(
+      { role: "user", content: turn.prompt },
+      { role: "assistant", content: answer.content }
+    );
+  }
+
+  return messages;
 }
