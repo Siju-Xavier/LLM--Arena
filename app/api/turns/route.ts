@@ -111,7 +111,11 @@ export async function POST(request: NextRequest) {
     const result = await prisma.$transaction(async (transaction) => {
       await transaction.user.upsert({ where: { id: userId }, create: { id: userId }, update: {} });
       const thread = existingThread
-        ? existingThread
+        ? await transaction.thread.update({
+            where: { id: existingThread.id },
+            data: { updatedAt: new Date() },
+            select: { id: true },
+          })
         : await transaction.thread.create({
             data: { userId, title: titleFromPrompt(input.prompt) },
             select: { id: true },

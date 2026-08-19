@@ -76,8 +76,8 @@ async function consumeSse(
   }
 }
 
-export function useArenaTurn() {
-  const [threadId, setThreadId] = useState<string | null>(null);
+export function useArenaTurn(initialThreadId: string | null = null) {
+  const [threadId, setThreadId] = useState<string | null>(initialThreadId);
   const [turnId, setTurnId] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Readonly<Record<string, ArenaAnswer>>>({});
@@ -184,12 +184,12 @@ export function useArenaTurn() {
           )
         );
         await Promise.allSettled(created.answers.map(streamAnswer));
-        return true;
+        return created.threadId;
       } catch (submitError) {
         setError(
           submitError instanceof Error ? submitError.message : "The prompt could not be started."
         );
-        return false;
+        return null;
       } finally {
         setIsRunning(false);
       }
@@ -248,5 +248,7 @@ export function useArenaTurn() {
     submit,
     vote,
     winnerId,
+    threadId,
+    turnId,
   };
 }
