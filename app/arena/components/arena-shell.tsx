@@ -11,9 +11,13 @@ import {
   Send,
   Trophy,
   UserRound,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 
+import { ModelPicker } from "@/app/arena/components/model-picker";
+import { useModelCatalog } from "@/app/arena/components/use-model-catalog";
 import { ThemeToggle } from "@/app/theme/toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,16 +30,34 @@ const threads = [
   { title: "SQL query plan review", time: "Aug 14", active: false },
 ];
 
-const models = [
-  { name: "Llama 3.3", shortName: "L", record: "0 / 0" },
-  { name: "Gemini Flash", shortName: "G", record: "0 / 0" },
-  { name: "DeepSeek R1", shortName: "D", record: "0 / 0" },
-];
-
 export function ArenaShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [metricsVisible, setMetricsVisible] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
+  const initializedSelection = useRef(false);
+  const { models: catalog, status: catalogStatus, refresh: refreshCatalog } = useModelCatalog();
+  const models = useMemo(
+    () => catalog.filter((model) => selectedIds.includes(model.id)),
+    [catalog, selectedIds]
+  );
+
+  useEffect(() => {
+    if (catalogStatus === "ready" && !initializedSelection.current) {
+      initializedSelection.current = true;
+      setSelectedIds(catalog.slice(0, 3).map((model) => model.id));
+    }
+  }, [catalog, catalogStatus]);
+
+  const addModel = (modelId: string) => {
+    setSelectedIds((current) =>
+      current.length < 3 && !current.includes(modelId) ? [...current, modelId] : current
+    );
+  };
+
+  const removeModel = (modelId: string) => {
+    setSelectedIds((current) => current.filter((id) => id !== modelId));
+  };
 
   return (
     <main
@@ -79,10 +101,10 @@ export function ArenaShell() {
             <Trophy aria-hidden />
             <span>Leaderboard</span>
           </button>
-          <button className="sidebar-nav-item" type="button">
+          <Link className="sidebar-nav-item" href="/models">
             <Bot aria-hidden />
             <span>Models</span>
-          </button>
+          </Link>
         </nav>
 
         <section className="thread-list" aria-labelledby="thread-list-title">
@@ -134,15 +156,11 @@ export function ArenaShell() {
           <div className="topbar-actions">
             <div className="model-records" aria-label="Thread model records">
               {models.map((model) => (
-                <div
-                  className="model-record"
-                  key={model.name}
-                  title={`${model.name}: won ${model.record}`}
-                >
+                <div className="model-record" key={model.id} title={`${model.name}: won 0 / 0`}>
                   <span className="model-initial" aria-hidden>
-                    {model.shortName}
+                    {model.name.slice(0, 1)}
                   </span>
-                  <span className="model-record-value">{model.record}</span>
+                  <span className="model-record-value">0 / 0</span>
                 </div>
               ))}
             </div>
@@ -171,11 +189,11 @@ export function ArenaShell() {
 
           <section className="response-grid" aria-label="Model response placeholders">
             {models.map((model) => (
-              <Card className="response-card" key={model.name}>
+              <Card className="response-card" key={model.id}>
                 <CardHeader className="response-card-header">
                   <div className="response-model">
                     <span className="model-initial" aria-hidden>
-                      {model.shortName}
+                      {model.name.slice(0, 1)}
                     </span>
                     <CardTitle>{model.name}</CardTitle>
                   </div>
@@ -213,23 +231,48 @@ export function ArenaShell() {
                 </CardFooter>
               </Card>
             ))}
+            {catalogStatus === "loading" ? (
+              <p className="catalog-state">Loading free models…</p>
+            ) : null}
+            {catalogStatus === "error" ? (
+              <div className="catalog-state" role="status">
+                <p>The model list is unavailable right now.</p>
+                <Button type="button" variant="outline" size="sm" onClick={refreshCatalog}>
+                  Retry
+                </Button>
+              </div>
+            ) : null}
+            {catalogStatus === "ready" && models.length === 0 ? (
+              <p className="catalog-state">Add at least one model to start comparing answers.</p>
+            ) : null}
           </section>
         </div>
 
         <form className="prompt-composer" onSubmit={(event) => event.preventDefault()}>
-          <div className="composer-models" aria-label="Selected placeholder models">
+          <div className="composer-models" aria-label="Selected models">
             {models.map((model) => (
-              <span className="composer-model" key={model.name}>
+              <span className="composer-model" key={model.id}>
                 <span className="model-initial" aria-hidden>
-                  {model.shortName}
+                  {model.name.slice(0, 1)}
                 </span>
                 {model.name}
+                <button
+                  className="composer-model-remove"
+                  type="button"
+                  aria-label={`Remove ${model.name}`}
+                  onClick={() => removeModel(model.id)}
+                >
+                  <X aria-hidden />
+                </button>
               </span>
             ))}
-            <Button type="button" variant="ghost" size="sm" disabled>
-              <Plus aria-hidden />
-              Add model
-            </Button>
+            <ModelPicker
+              catalog={catalog}
+              selectedIds={selectedIds}
+              status={catalogStatus}
+              onSelect={addModel}
+              onRetry={refreshCatalog}
+            />
           </div>
           <textarea
             className="composer-input"
@@ -237,7 +280,7 @@ export function ArenaShell() {
             placeholder="Ask the arena anything"
             rows={2}
           />
-          <Button type="submit" size="icon" aria-label="Send prompt" disabled>
+          <Button type="submit" size="icon" aria-label="Send prompt" disabled={models.length === 0}>
             <Send aria-hidden />
           </Button>
         </form>
