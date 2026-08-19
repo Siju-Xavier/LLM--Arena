@@ -24,7 +24,7 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | 4   | Design & look                               | Foundation | done        |
 | 5   | Model picker                                | Slice 1    | not started |
 | 6   | Send a prompt, parallel streams, and voting | Slice 1    | not started |
-| 7   | App shell & thread history                  | Slice 2    | not started |
+| 7   | App shell & thread history                  | Slice 2    | in progress |
 | 8   | Public thread visibility & sharing          | Slice 3    | not started |
 | 9   | Leaderboard: global & personal              | Slice 4    | not started |
 
@@ -95,8 +95,16 @@ Decision: a café scoreboard, not a neon dashboard. Dark espresso is the default
 
 An "Add model" popover pulling OpenRouter's live free-tier list, sorted by context window, capped at three models, defaulting to all three selected, with removable chips next to the prompt box. Also render that same catalog as a simple `/models` page, name, context window, and pricing for each one, so anyone can browse the full list without opening the picker.
 
-- [ ] Decide the approach
+- [x] Decide the approach (build the responsive shell first with intentionally static preview data; real thread history, model records, requests, and votes remain owned by later slices)
 - [ ] Build it
+  - [x] Persistent responsive top bar and collapsible navigation shell
+  - [x] Preview thread list, thread title, and equal model records
+  - [x] Placeholder response columns and prompt composer for the future arena loop
+  - [x] UI-only controls for sidebar and metrics visibility
+  - [ ] Connect signed-in thread history and persisted records
+  - [ ] Wire live model catalog, streaming, and votes from slices 5 and 6
+  - [x] Typecheck, lint, and build
+  - [ ] Inspect desktop and mobile layouts in a browser
 
 ### 6. Send a prompt, parallel streams, and voting
 

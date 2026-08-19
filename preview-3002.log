@@ -1,0 +1,16 @@
+
+> my-app@0.1.0 start
+> next start --port 3002
+
+▲ Next.js 16.3.1
+- Local:         http://localhost:3002
+- Network:       http://192.168.56.1:3002
+✓ Ready in 538ms
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\sijux because it is outside the current Git repository (C:\Users\sijux\Desktop\llm arena\my-app).
+ To use this directory, set `outputFileTracingRoot` in your Next.js config.
+
+✓ Running next.config.ts took 86ms
+Attention: Clerk collects telemetry data from its SDKs when connected to development instances.
+The data collected is used to inform Clerk's product roadmap.
+To learn more, including how to opt-out from the telemetry program, visit: https://clerk.com/docs/telemetry.
+
