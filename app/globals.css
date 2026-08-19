@@ -174,7 +174,8 @@
 
 .arena-shell {
   display: grid;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   grid-template-columns: 17.5rem minmax(0, 1fr);
   background: var(--background);
 }
@@ -340,6 +341,28 @@
   font-size: 0.75rem;
 }
 
+.thread-list-message,
+.thread-list-retry {
+  margin: 0.5rem 0.65rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.thread-list-retry {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.thread-list-retry:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 .sidebar-footer {
   justify-content: space-between;
   gap: 0.5rem;
@@ -387,8 +410,23 @@
 
 .arena-workspace {
   display: grid;
+  min-height: 0;
   min-width: 0;
   grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.thread-page-state {
+  display: flex;
+  min-height: 16rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+.thread-page-state p {
+  margin: 0;
 }
 
 .arena-topbar {
@@ -490,6 +528,40 @@
   grid-template-columns: repeat(3, minmax(15rem, 1fr));
   gap: 1rem;
   margin: 0 auto;
+}
+
+.history-turn {
+  max-width: 86rem;
+  margin: 0 auto 2.5rem;
+}
+
+.history-prompt {
+  max-width: 54rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--primary);
+  padding-left: 1rem;
+}
+
+.history-prompt h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.history-response {
+  min-height: 14rem;
+}
+
+.history-winner-mark {
+  color: var(--winner);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.history-turn + .live-response-grid {
+  margin-top: 2.5rem;
 }
 
 .response-card {
@@ -966,6 +1038,7 @@
   .arena-shell,
   .sidebar-collapsed {
     display: block;
+    height: 100vh;
   }
 
   .arena-sidebar {

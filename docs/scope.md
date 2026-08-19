@@ -24,8 +24,8 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | 4   | Design & look                               | Foundation | done        |
 | 5   | Model picker                                | Slice 1    | in progress |
 | 6   | Send a prompt, parallel streams, and voting | Slice 1    | in progress |
-| 7   | App shell & thread history                  | Slice 2    | in progress |
-| 8   | Public thread visibility & sharing          | Slice 3    | not started |
+| 7   | App shell & thread history                  | Slice 2    | done        |
+| 8   | Public thread visibility & sharing          | Slice 3    | done        |
 | 9   | Leaderboard: global & personal              | Slice 4    | not started |
 
 ## Foundation
@@ -106,7 +106,7 @@ An "Add model" popover pulling OpenRouter's live free-tier list, sorted by conte
   - [x] Preview thread list, thread title, and equal model records
   - [x] Placeholder response columns and prompt composer for the future arena loop
   - [x] UI-only controls for sidebar and metrics visibility
-  - [ ] Connect signed-in thread history and persisted records
+  - [x] Connect signed-in thread history and persisted records
   - [ ] Wire streaming and votes from slice 6
   - [x] Typecheck, lint, and build
   - [ ] Inspect desktop and mobile layouts in a browser (dev-server startup verified; this sandbox cannot reach its own loopback server from a separate verification command)
@@ -140,8 +140,15 @@ Every prompt sent, every answer finishing, and every vote cast should be tracked
 
 The frame everything else sits inside: a top bar and sidebar that stay in place while the page scrolls, the thread's name, and each model's win record shown right there (shrinking down to a small dot and number if it gets crowded). The sidebar lists a signed-in user's own past threads so the tool actually feels usable across visits, not just in one sitting.
 
-- [ ] Decide the approach
-- [ ] Build it
+- [x] Decide the approach (add authenticated owned-thread read endpoints; hydrate immutable prior turns into the existing shell; keep live streaming isolated to the newly submitted turn; move a new comparison onto its permanent `/threads/[threadId]` URL after creation)
+- [x] Build it
+  - [x] Add authenticated thread-list and owned-thread detail endpoints
+  - [x] Hydrate prior prompts, answers, metrics, failures, and votes
+  - [x] Link real recent threads and support starting a new comparison
+  - [x] Continue a persisted thread and keep its permanent URL
+  - [x] Show real per-model win records with compact responsive treatment
+  - [x] Add plain loading, signed-out, empty, and unavailable states
+  - [x] Typecheck, lint, and production build
 
 ## Slice 3: Public visibility & sharing
 
@@ -149,8 +156,13 @@ The frame everything else sits inside: a top bar and sidebar that stay in place 
 
 Anyone should be able to open a thread's link and see it, without an account, that's what actually makes it shareable. Only sending a prompt and voting need sign-in. A made-up or deleted thread just shows a plain not-found page either way. The thread's real owner sees everything everyone else sees, plus the ability to actually use it.
 
-- [ ] Decide the approach
-- [ ] Build it
+- [x] Decide the approach (make thread detail reads public; return viewer ownership separately; keep prompt submission and voting owner-authenticated; render unknown threads through the standard not-found page)
+- [x] Build it
+  - [x] Expose persisted thread detail without requiring authentication
+  - [x] Distinguish owner and read-only visitor capabilities in the UI
+  - [x] Render missing or deleted threads as not found
+  - [x] Reset all client arena state when navigating between persisted thread routes
+  - [x] Typecheck, lint, production build, and smoke test
 
 ## Slice 4: Leaderboard
 
