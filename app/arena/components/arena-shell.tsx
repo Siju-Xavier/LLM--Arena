@@ -337,10 +337,10 @@ export function ArenaShell({
             <LayoutPanelTop aria-hidden />
             <span>Arena</span>
           </button>
-          <button className="sidebar-nav-item" type="button">
+          <Link className="sidebar-nav-item" href="/leaderboard">
             <Trophy aria-hidden />
             <span>Leaderboard</span>
-          </button>
+          </Link>
           <Link className="sidebar-nav-item" href="/models">
             <Bot aria-hidden />
             <span>Models</span>
