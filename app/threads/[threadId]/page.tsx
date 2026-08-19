@@ -14,6 +14,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
 
   return (
     <ArenaShell
+      key={threadId}
       initialThreadId={threadId}
       initialThread={result.thread}
       initialIsOwner={userId === result.ownerId}

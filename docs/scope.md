@@ -161,6 +161,7 @@ Anyone should be able to open a thread's link and see it, without an account, th
   - [x] Expose persisted thread detail without requiring authentication
   - [x] Distinguish owner and read-only visitor capabilities in the UI
   - [x] Render missing or deleted threads as not found
+  - [x] Reset all client arena state when navigating between persisted thread routes
   - [x] Typecheck, lint, production build, and smoke test
 
 ## Slice 4: Leaderboard
