@@ -12,10 +12,7 @@ import { streamChatCompletion, type ChatMessage } from "@/app/arena/lib/openrout
 // ---------------------------------------------------------------------------
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
-  rules: [
-    shield({ mode: "LIVE" }),
-    detectBot({ mode: "LIVE", allow: [] }),
-  ],
+  rules: [shield({ mode: "LIVE" }), detectBot({ mode: "LIVE", allow: [] })],
 });
 
 // ---------------------------------------------------------------------------
@@ -27,12 +24,7 @@ interface ChatRequestBody {
 }
 
 function parseBody(raw: unknown): ChatRequestBody {
-  if (
-    typeof raw !== "object" ||
-    raw === null ||
-    !("modelId" in raw) ||
-    !("messages" in raw)
-  ) {
+  if (typeof raw !== "object" || raw === null || !("modelId" in raw) || !("messages" in raw)) {
     throw new Error("Request body must include modelId and messages.");
   }
 
@@ -53,9 +45,7 @@ function parseBody(raw: unknown): ChatRequestBody {
       typeof (msg as Record<string, unknown>).role !== "string" ||
       typeof (msg as Record<string, unknown>).content !== "string"
     ) {
-      throw new Error(
-        "Each message must have a string role and string content."
-      );
+      throw new Error("Each message must have a string role and string content.");
     }
   }
 
@@ -81,8 +71,7 @@ export async function POST(request: NextRequest) {
     const raw: unknown = await request.json();
     body = parseBody(raw);
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Invalid request body.";
+    const message = err instanceof Error ? err.message : "Invalid request body.";
     return Response.json({ error: message }, { status: 400 });
   }
 
@@ -102,8 +91,7 @@ export async function POST(request: NextRequest) {
     console.error("[chat route] OpenRouter error:", err);
     return Response.json(
       {
-        error:
-          "Something went wrong reaching the model. Please try again in a moment.",
+        error: "Something went wrong reaching the model. Please try again in a moment.",
       },
       { status: 502 }
     );
