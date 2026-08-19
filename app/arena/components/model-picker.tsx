@@ -12,6 +12,7 @@ interface ModelPickerProps {
   readonly status: "loading" | "ready" | "error";
   readonly onSelect: (modelId: string) => void;
   readonly onRetry: () => void;
+  readonly disabled?: boolean;
 }
 
 function formatContextWindow(contextLength: number): string {
@@ -21,14 +22,26 @@ function formatContextWindow(contextLength: number): string {
   }).format(contextLength)} context`;
 }
 
-export function ModelPicker({ catalog, selectedIds, status, onSelect, onRetry }: ModelPickerProps) {
+export function ModelPicker({
+  catalog,
+  selectedIds,
+  status,
+  onSelect,
+  onRetry,
+  disabled = false,
+}: ModelPickerProps) {
   const availableModels = catalog.filter((model) => !selectedIds.includes(model.id));
   const isFull = selectedIds.length >= 3;
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button type="button" variant="ghost" size="sm" disabled={isFull || status === "loading"}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={disabled || isFull || status === "loading"}
+        >
           <Plus aria-hidden />
           Add model
         </Button>

@@ -14,8 +14,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  threads   Thread[]
-  votes     Vote[]
+  threads Thread[]
+  votes   Vote[]
 }
 
 model Thread {
@@ -25,50 +25,63 @@ model Thread {
   title     String   @default("New Chat")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  turns     Turn[]
+
+  turns Turn[]
 }
 
 model Turn {
-  id        String   @id @default(cuid())
-  threadId  String
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  
-  prompt    String   // The text the user sent
+  id       String @id @default(cuid())
+  threadId String
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  prompt    String // The text the user sent
   createdAt DateTime @default(now())
-  
-  answers   Answer[]
-  vote      Vote?
+
+  answers Answer[]
+  vote    Vote?
+}
+
+enum AnswerStatus {
+  PENDING
+  STREAMING
+  COMPLETED
+  FAILED
 }
 
 model Answer {
-  id        String   @id @default(cuid())
-  turnId    String
-  turn      Turn     @relation(fields: [turnId], references: [id], onDelete: Cascade)
-  
-  modelId   String   // e.g. "openai/gpt-4o-mini"
-  content   String   // the generated text
-  
+  id     String @id @default(cuid())
+  turnId String
+  turn   Turn   @relation(fields: [turnId], references: [id], onDelete: Cascade)
+
+  modelId   String // e.g. "openai/gpt-4o-mini"
+  content   String       @default("") // the generated text
+  status    AnswerStatus @default(PENDING)
+  errorCode String?
+
   timeToFirstTokenMs Int?
   tokensPerSecond    Float?
   totalTokens        Int?
-  isFailed           Boolean  @default(false)
-  
-  createdAt DateTime @default(now())
-  
-  vote      Vote?
+  isFailed           Boolean @default(false)
+
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  vote Vote?
+
+  @@unique([turnId, modelId])
 }
 
 model Vote {
-  id        String   @id @default(cuid())
-  turnId    String   @unique
-  turn      Turn     @relation(fields: [turnId], references: [id], onDelete: Cascade)
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  answerId  String   @unique
-  answer    Answer   @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  turnId String @unique
+  turn   Turn   @relation(fields: [turnId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  answerId String @unique
+  answer   Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 }

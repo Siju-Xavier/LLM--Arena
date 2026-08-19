@@ -23,7 +23,7 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | 3   | Data model                                  | Foundation | done        |
 | 4   | Design & look                               | Foundation | done        |
 | 5   | Model picker                                | Slice 1    | in progress |
-| 6   | Send a prompt, parallel streams, and voting | Slice 1    | not started |
+| 6   | Send a prompt, parallel streams, and voting | Slice 1    | in progress |
 | 7   | App shell & thread history                  | Slice 2    | in progress |
 | 8   | Public thread visibility & sharing          | Slice 3    | not started |
 | 9   | Leaderboard: global & personal              | Slice 4    | not started |
@@ -119,8 +119,20 @@ Arcjet sits in front of this endpoint before any model is ever called: rate limi
 
 Every prompt sent, every answer finishing, and every vote cast should be tracked as a real PostHog event, so there's an honest funnel from prompt to answer to vote. A model failing should also be logged properly on the server, not just shown to the user and forgotten. Separately from that funnel, every actual model call should also be wrapped so PostHog captures its own real tokens, cost, and latency per call, that's PostHog's own LLM analytics, not the same thing as the funnel events or the numbers already shown on the response card.
 
-- [ ] Decide the approach
+- [x] Decide the approach (create one persisted turn first, then start one authenticated, independently measured SSE request per pending answer; derive each model's conversation server-side and commit a single immutable vote transactionally)
 - [ ] Build it
+  - [x] Add explicit answer lifecycle and completion metadata to the data model
+  - [x] Create authenticated turns with one pending answer per selected free model
+  - [x] Stream each answer independently through an app-owned SSE protocol
+  - [x] Persist answer content, failures, TTFT, speed, and token usage
+  - [x] Continue follow-ups through each model's own conversation history
+  - [x] Enforce Arcjet bot, shield, prompt-injection, and aggregate per-user usage rules
+  - [x] Capture prompt, answer, failure, vote, and per-call LLM analytics in PostHog
+  - [x] Allow exactly one vote after at least two successful answers
+  - [x] Wire the composer, response cards, independent errors, retries, metrics, and winner state
+  - [x] Apply the answer-lifecycle migration to the configured database
+  - [x] Typecheck, lint, and production build
+  - [ ] Exercise a signed-in multi-model prompt and vote in a real browser (production server starts successfully; this sandbox cannot reach its own loopback server from a separate verification command)
 
 ## Slice 2: App shell & thread history
 
