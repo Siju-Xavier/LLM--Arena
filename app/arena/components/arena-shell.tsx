@@ -54,6 +54,8 @@ function formatThreadTime(value: string): string {
 
 interface ArenaShellProps {
   readonly initialThreadId?: string;
+  readonly initialThread?: PersistedThread;
+  readonly initialIsOwner?: boolean;
 }
 
 function PersistedTurnView({
@@ -122,7 +124,11 @@ function PersistedTurnView({
   );
 }
 
-export function ArenaShell({ initialThreadId }: ArenaShellProps) {
+export function ArenaShell({
+  initialThreadId,
+  initialThread = undefined,
+  initialIsOwner = false,
+}: ArenaShellProps) {
   const { isSignedIn, isLoaded: isAuthLoaded } = useUser();
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -132,9 +138,12 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
   const [draft, setDraft] = useState("");
   const [threads, setThreads] = useState<readonly ThreadSummary[]>([]);
   const [threadListStatus, setThreadListStatus] = useState<LoadStatus>("loading");
-  const [persistedThread, setPersistedThread] = useState<PersistedThread | null>(null);
+  const [persistedThread, setPersistedThread] = useState<PersistedThread | null>(
+    initialThread ?? null
+  );
+  const [isThreadOwner, setIsThreadOwner] = useState(initialIsOwner);
   const [threadStatus, setThreadStatus] = useState<LoadStatus>(
-    initialThreadId ? "loading" : "idle"
+    initialThread ? "ready" : initialThreadId ? "loading" : "idle"
   );
   const initializedSelection = useRef(false);
   const { models: catalog, status: catalogStatus, refresh: refreshCatalog } = useModelCatalog();
@@ -159,8 +168,12 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
   const refreshPersistedThread = useCallback(async (threadId: string) => {
     const response = await fetch(`/api/threads/${threadId}`);
     if (!response.ok) return;
-    const result = (await response.json()) as { readonly thread: PersistedThread };
+    const result = (await response.json()) as {
+      readonly thread: PersistedThread;
+      readonly isOwner: boolean;
+    };
     setPersistedThread(result.thread);
+    setIsThreadOwner(result.isOwner);
     setThreadStatus("ready");
   }, []);
 
@@ -189,10 +202,9 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
 
   useEffect(() => {
     if (!initialThreadId || !isAuthLoaded) return;
-    if (!isSignedIn) return;
     let cancelled = false;
     const loadThread = async () => {
-      setThreadStatus("loading");
+      if (!initialThread) setThreadStatus("loading");
       try {
         const response = await fetch(`/api/threads/${initialThreadId}`);
         if (cancelled) return;
@@ -201,8 +213,12 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
           return;
         }
         if (!response.ok) throw new Error("THREAD");
-        const result = (await response.json()) as { readonly thread: PersistedThread };
+        const result = (await response.json()) as {
+          readonly thread: PersistedThread;
+          readonly isOwner: boolean;
+        };
         setPersistedThread(result.thread);
+        setIsThreadOwner(result.isOwner);
         setThreadStatus("ready");
       } catch {
         if (!cancelled) setThreadStatus("error");
@@ -212,10 +228,10 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
     return () => {
       cancelled = true;
     };
-  }, [initialThreadId, isAuthLoaded, isSignedIn]);
+  }, [initialThread, initialThreadId, isAuthLoaded, isSignedIn]);
 
-  const visibleThreadStatus =
-    initialThreadId && isAuthLoaded && !isSignedIn ? "error" : threadStatus;
+  const visibleThreadStatus = threadStatus;
+  const isReadOnlyThread = Boolean(initialThreadId && !isThreadOwner);
 
   useEffect(() => {
     if (
@@ -417,7 +433,9 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
             <Menu aria-hidden />
           </Button>
           <div className="thread-identity">
-            <p className="breadcrumb">Arena / Your threads</p>
+            <p className="breadcrumb">
+              Arena / {isReadOnlyThread ? "Shared thread" : "Your threads"}
+            </p>
             <h1>{persistedThread?.title ?? arena.prompt ?? "New comparison"}</h1>
           </div>
           <div className="topbar-actions">
@@ -462,16 +480,15 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
           ) : null}
           {visibleThreadStatus === "error" && initialThreadId ? (
             <div className="thread-page-state" role="status">
-              <p>
-                {isSignedIn
-                  ? "This thread could not be loaded."
-                  : "Sign in to open your thread history."}
-              </p>
-              {!isSignedIn ? (
-                <SignInButton mode="modal">
-                  <Button size="sm">Sign in</Button>
-                </SignInButton>
-              ) : null}
+              <p>This thread could not be loaded.</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void refreshPersistedThread(initialThreadId)}
+              >
+                Retry
+              </Button>
             </div>
           ) : null}
           {!initialThreadId || visibleThreadStatus === "ready" ? (
@@ -563,7 +580,7 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
                               type="button"
                               variant="outline"
                               size="sm"
-                              disabled={arena.isRunning}
+                              disabled={arena.isRunning || isReadOnlyThread}
                               onClick={() => void arena.retry(model.id)}
                             >
                               Retry model
@@ -641,57 +658,78 @@ export function ArenaShell({ initialThreadId }: ArenaShellProps) {
           ) : null}
         </div>
 
-        <form className="prompt-composer" onSubmit={submitPrompt}>
-          <div className="composer-models" aria-label="Selected models">
-            {models.map((model) => (
-              <span className="composer-model" key={model.id}>
-                <span className="model-initial" aria-hidden>
-                  {model.name.slice(0, 1)}
-                </span>
-                {model.name}
-                <button
-                  className="composer-model-remove"
-                  type="button"
-                  aria-label={`Remove ${model.name}`}
-                  onClick={() => removeModel(model.id)}
-                  disabled={arena.isRunning}
-                >
-                  <X aria-hidden />
-                </button>
-              </span>
-            ))}
-            <ModelPicker
-              catalog={catalog}
-              selectedIds={selectedIds}
-              status={catalogStatus}
-              onSelect={addModel}
-              onRetry={refreshCatalog}
-              disabled={arena.isRunning}
-            />
-          </div>
-          <textarea
-            className="composer-input"
-            aria-label="Prompt"
-            placeholder="Ask the arena anything"
-            rows={2}
-            value={draft}
-            maxLength={12000}
-            disabled={arena.isRunning}
-            onChange={(event) => setDraft(event.target.value)}
-          />
-          <Button
-            type="submit"
-            size="icon"
-            aria-label="Send prompt"
-            disabled={models.length === 0 || !draft.trim() || arena.isRunning}
-          >
-            {arena.isRunning ? (
-              <LoaderCircle className="is-spinning" aria-hidden />
+        {isReadOnlyThread ? (
+          <div className="prompt-composer" role="note" aria-label="Read-only shared thread">
+            <p className="thread-list-message">
+              {isSignedIn
+                ? "This shared thread is read-only. Only its owner can continue it."
+                : "You can read this shared thread without an account. Sign in to start your own comparison."}
+            </p>
+            {!isSignedIn ? (
+              <SignInButton mode="modal">
+                <Button type="button" size="sm" disabled={!isAuthLoaded}>
+                  Sign in
+                </Button>
+              </SignInButton>
             ) : (
-              <Send aria-hidden />
+              <Button asChild size="sm">
+                <Link href="/">Start a comparison</Link>
+              </Button>
             )}
-          </Button>
-        </form>
+          </div>
+        ) : (
+          <form className="prompt-composer" onSubmit={submitPrompt}>
+            <div className="composer-models" aria-label="Selected models">
+              {models.map((model) => (
+                <span className="composer-model" key={model.id}>
+                  <span className="model-initial" aria-hidden>
+                    {model.name.slice(0, 1)}
+                  </span>
+                  {model.name}
+                  <button
+                    className="composer-model-remove"
+                    type="button"
+                    aria-label={`Remove ${model.name}`}
+                    onClick={() => removeModel(model.id)}
+                    disabled={arena.isRunning}
+                  >
+                    <X aria-hidden />
+                  </button>
+                </span>
+              ))}
+              <ModelPicker
+                catalog={catalog}
+                selectedIds={selectedIds}
+                status={catalogStatus}
+                onSelect={addModel}
+                onRetry={refreshCatalog}
+                disabled={arena.isRunning}
+              />
+            </div>
+            <textarea
+              className="composer-input"
+              aria-label="Prompt"
+              placeholder="Ask the arena anything"
+              rows={2}
+              value={draft}
+              maxLength={12000}
+              disabled={arena.isRunning}
+              onChange={(event) => setDraft(event.target.value)}
+            />
+            <Button
+              type="submit"
+              size="icon"
+              aria-label="Send prompt"
+              disabled={models.length === 0 || !draft.trim() || arena.isRunning}
+            >
+              {arena.isRunning ? (
+                <LoaderCircle className="is-spinning" aria-hidden />
+              ) : (
+                <Send aria-hidden />
+              )}
+            </Button>
+          </form>
+        )}
       </section>
     </main>
   );
