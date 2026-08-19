@@ -35,6 +35,8 @@ export async function getLeaderboard(userId?: string): Promise<readonly Leaderbo
     INNER JOIN "Turn" t ON t.id = a."turnId"
     INNER JOIN "Vote" v ON v."turnId" = t.id
     WHERE a.status = 'COMPLETED'
+      AND a."completedAt" IS NOT NULL
+      AND a."completedAt" <= v."createdAt"
     ${voterFilter}
     GROUP BY a."modelId"
   `);
