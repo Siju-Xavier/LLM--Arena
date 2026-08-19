@@ -1,0 +1,62 @@
+
+> my-app@0.1.0 start
+> next start --port 3001
+
+▲ Next.js 16.3.1
+- Local:         http://localhost:3001
+- Network:       http://192.168.56.1:3001
+✓ Ready in 842ms
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\sijux because it is outside the current Git repository (C:\Users\sijux\Desktop\llm arena\my-app).
+ To use this directory, set `outputFileTracingRoot` in your Next.js config.
+
+✓ Running next.config.ts took 128ms
+Attention: Clerk collects telemetry data from its SDKs when connected to development instances.
+The data collected is used to inform Clerk's product roadmap.
+To learn more, including how to opt-out from the telemetry program, visit: https://clerk.com/docs/telemetry.
+
+Clerk: unable to resolve handshake: TypeError: fetch failed
+    at async i0 (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:32045)
+    at async rP (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:9:2733)
+    at async iZ (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:31124)
+    at async oM (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:99867)
+    at async oL.getCookiesFromHandshake (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:101931)
+    at async oL.resolveHandshake (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:102196)
+    at async h (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:27:5447)
+    at async (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:67:14156) {
+  [cause]: AggregateError: 
+      at ignore-listed frames {
+    code: 'EACCES',
+    [errors]: [ [Error], [Error], [Error], [Error] ]
+  }
+}
+Clerk: unable to resolve handshake: TypeError: fetch failed
+    at async i0 (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:32045)
+    at async rP (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:9:2733)
+    at async iZ (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:31124)
+    at async oM (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:99867)
+    at async oL.getCookiesFromHandshake (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:101931)
+    at async oL.resolveHandshake (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:102196)
+    at async h (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:27:5447)
+    at async (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:67:14156) {
+  [cause]: AggregateError: 
+      at ignore-listed frames {
+    code: 'EACCES',
+    [errors]: [ [Error], [Error], [Error], [Error] ]
+  }
+}
+Clerk: unable to resolve handshake: TypeError: fetch failed
+    at async i0 (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:32045)
+    at async rP (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:9:2733)
+    at async iZ (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:31124)
+    at async oM (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:99867)
+    at async oL.getCookiesFromHandshake (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:101931)
+    at async oL.resolveHandshake (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:20:102196)
+    at async h (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:27:5447)
+    at async (C:\Users\sijux\Desktop\llm arena\my-app\.next\server\chunks\[root-of-the-server]__11zkttx._.js:67:14156) {
+  [cause]: AggregateError: 
+      at ignore-listed frames {
+    code: 'EACCES',
+    [errors]: [ [Error], [Error], [Error], [Error] ]
+  }
+}
+Clerk: Refreshing the session token resulted in an infinite redirect loop. This usually means that your Clerk instance keys do not match - make sure to copy the correct publishable and secret keys from the Clerk dashboard.

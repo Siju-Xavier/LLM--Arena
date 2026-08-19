@@ -1,0 +1,22 @@
+export const clerkAppearance = {
+  variables: {
+    colorPrimary: "var(--primary)",
+    colorPrimaryForeground: "var(--primary-foreground)",
+    colorForeground: "var(--foreground)",
+    colorMutedForeground: "var(--muted-foreground)",
+    colorMuted: "var(--muted)",
+    colorBackground: "var(--card)",
+    colorDanger: "var(--destructive)",
+    colorSuccess: "var(--winner)",
+    colorWarning: "var(--clerk-color-warning)",
+    colorNeutral: "var(--muted-foreground)",
+    colorInput: "var(--background)",
+    colorInputForeground: "var(--foreground)",
+    colorBorder: "var(--border)",
+    colorRing: "var(--ring)",
+    borderRadius: "0.5rem",
+    fontFamily: "var(--font-sans)",
+    fontFamilyButtons: "var(--font-sans)",
+    fontFamilyMono: "var(--font-mono)",
+  },
+};

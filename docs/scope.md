@@ -19,9 +19,9 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | #   | Feature                                     | Phase      | Status      |
 | --- | ------------------------------------------- | ---------- | ----------- |
 | 1   | Connecting to a model                       | Foundation | done        |
-| 2   | Coding standards & tooling                  | Foundation | not started |
-| 3   | Data model                                  | Foundation | not started |
-| 4   | Design & look                               | Foundation | not started |
+| 2   | Coding standards & tooling                  | Foundation | done        |
+| 3   | Data model                                  | Foundation | done        |
+| 4   | Design & look                               | Foundation | done        |
 | 5   | Model picker                                | Slice 1    | not started |
 | 6   | Send a prompt, parallel streams, and voting | Slice 1    | not started |
 | 7   | App shell & thread history                  | Slice 2    | not started |
@@ -51,22 +51,43 @@ PostHog should be wired in from the start too, session replay and heatmaps turne
 
 Write down the real conventions for this project once it actually exists, then install linting, formatting, and a pre-commit hook that actually enforces them.
 
-- [ ] Decide the approach
-- [ ] Install lint, format, and whatever else is needed, and write it up in a coding-standards doc
+- [x] Decide the approach
+- [x] Install lint, format, and whatever else is needed, and write it up in a coding-standards doc
 
 ### 3. Data model
 
 The core things every feature depends on: users tied to Clerk, threads, each model's own messages inside a thread, and votes. A vote should only ever be possible on a turn where two or more models actually answered.
 
-- [ ] Decide the approach
-- [ ] Build it
+- [x] Decide the approach
+- [x] Build it
 
 ### 4. Design & look
 
 A coffee or dark brown background, warm, not neutral gray or true black. One accent color, rust, used only for things you interact with, buttons, links, focus states, the win-rate bar, never as decoration. Because the background and the accent are both warm tones from the same family, the accent has to stay clearly brighter and more saturated than the background, enough that a button never blends into the page behind it, that's a real risk with two warm colors this close and worth checking by eye, not just by the numbers. Blue, indigo, and purple are never the accent, under any circumstance. Green is reserved only for marking a winner, red only for errors, never reused for anything else. Contrast should genuinely hold up in both light and dark mode, not just look fine at a glance.
 
-- [ ] Decide the approach
-- [ ] Build it
+Decision: a café scoreboard, not a neon dashboard. Dark espresso is the default; light latte is a full sibling. Rust is `--primary` and `--ring` only. `--accent` is a lifted brown hover, never a second color. Error is a cooler red so it cannot be mistaken for rust. Winner is forest green, never teal. Models stay the same visual treatment until a vote. Type is Fraunces for the wordmark and titles, Source Sans 3 for UI and answers, Source Code Pro for metrics and code. shadcn new-york, 8px radius, no glass, no glow, no per-model neon. Clerk uses the same tokens. The leftover cyan/magenta prototype is a contradiction and gets replaced with a look-proof, not kept.
+
+| Token      | Dark      | Light     | Role                                |
+| ---------- | --------- | --------- | ----------------------------------- |
+| Background | `#1C1410` | `#F3E6D6` | Page                                |
+| Surface    | `#2A1F1A` | `#FFF9F2` | Cards, wells                        |
+| Text       | `#F4EDE6` | `#241710` | Body                                |
+| Muted      | `#B9A394` | `#7A6558` | Metrics, labels                     |
+| Line       | `#3D2E27` | `#E0D0C0` | Borders                             |
+| Rust fill  | `#C4451A` | `#C2410C` | Buttons, links, focus, win-rate bar |
+| On-rust    | `#FFF8F3` | `#FFF8F3` | Text on rust                        |
+| Winner     | `#3F8F5C` | `#1F7A3F` | Winner mark only                    |
+| Error      | `#E24B4B` | `#B42318` | Errors only                         |
+
+- [x] Decide the approach
+- [x] Build it
+  - [x] Coffee/rust tokens in `globals.css`, light and dark
+  - [x] shadcn new-york primitives: button, card, input, skeleton
+  - [x] Fraunces, Source Sans 3, Source Code Pro
+  - [x] `next-themes` dark default, theme toggle
+  - [x] Clerk appearance uses the same tokens
+  - [x] Replace the cyberpunk home with a look-proof
+  - [x] Typecheck, lint, build, check contrast by eye
 
 ## Slice 1: Core arena loop
 

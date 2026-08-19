@@ -47,11 +47,7 @@ function PostHogIdentify() {
   return null;
 }
 
-export function PostHogProvider({
-  children,
-}: {
-  readonly children: React.ReactNode;
-}) {
+export function PostHogProvider({ children }: { readonly children: React.ReactNode }) {
   return (
     <PHProvider client={posthog}>
       <PostHogIdentify />

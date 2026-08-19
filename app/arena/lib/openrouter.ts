@@ -56,9 +56,7 @@ export async function streamChatCompletion(
 
   if (!response.ok) {
     const body = await response.text().catch(() => "(unreadable body)");
-    throw new Error(
-      `OpenRouter returned ${response.status}: ${body}`
-    );
+    throw new Error(`OpenRouter returned ${response.status}: ${body}`);
   }
 
   if (!response.body) {

@@ -17,9 +17,7 @@ function required(name: string): string {
 export const OPENROUTER_API_KEY = required("OPENROUTER_API_KEY");
 
 /** Clerk – public key embedded in the client bundle. */
-export const NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = required(
-  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
-);
+export const NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = required("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY");
 
 /** Clerk – secret key, server-side only. */
 export const CLERK_SECRET_KEY = required("CLERK_SECRET_KEY");
