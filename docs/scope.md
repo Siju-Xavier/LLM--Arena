@@ -26,7 +26,7 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | 6   | Send a prompt, parallel streams, and voting | Slice 1    | in progress |
 | 7   | App shell & thread history                  | Slice 2    | done        |
 | 8   | Public thread visibility & sharing          | Slice 3    | done        |
-| 9   | Leaderboard: global & personal              | Slice 4    | not started |
+| 9   | Leaderboard: global & personal              | Slice 4    | done        |
 
 ## Foundation
 
@@ -170,8 +170,16 @@ Anyone should be able to open a thread's link and see it, without an account, th
 
 Two leaderboards from the same votes, one for everyone, one just for the signed-in user. Each row's win rate is the big, bold number, in the accent color, with a small bar next to it, always written as "won 4 of 5," never a bare percentage or a made-up score. Smaller, quieter numbers underneath for average speed and time-to-first-token, each clearly labeled. No cost or "cheapest" stat, every model is free, so that number never means anything here. First place gets a subtle highlight, nobody else does.
 
-- [ ] Decide the approach
-- [ ] Build it
+- [x] Decide the approach (aggregate completed answers from voted turns; rank by win rate with deterministic tie-breakers; reuse the same server-side query with an authenticated voter filter for Personal; keep Global public)
+- [x] Build it
+  - [x] Add one server-only global/personal leaderboard aggregation
+  - [x] Exclude failed, unfinished, and unvoted answers from appearances and averages
+  - [x] Resolve live model names with a stored-ID fallback
+  - [x] Build global and personal views with signed-out and empty states
+  - [x] Show win rate, "won X of Y," average speed, and average TTFT
+  - [x] Highlight first place only and add responsive leaderboard styling
+  - [x] Link the arena navigation to the leaderboard
+  - [x] Typecheck, lint, and production build
 
 ## Not doing right now
 
