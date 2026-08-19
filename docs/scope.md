@@ -18,7 +18,7 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 
 | #   | Feature                                     | Phase      | Status      |
 | --- | ------------------------------------------- | ---------- | ----------- |
-| 1   | Connecting to a model                       | Foundation | not started |
+| 1   | Connecting to a model                       | Foundation | done        |
 | 2   | Coding standards & tooling                  | Foundation | not started |
 | 3   | Data model                                  | Foundation | not started |
 | 4   | Design & look                               | Foundation | not started |
@@ -38,8 +38,14 @@ Two real decisions still open once that exists: how the app calls OpenRouter to 
 
 PostHog should be wired in from the start too, session replay and heatmaps turned on, and tied to the signed-in user once Clerk resolves, so events are attached to a real person, not left anonymous.
 
-- [ ] Decide the approach
-- [ ] Write the spec
+- [x] Decide the approach (three independent SSE connections, pure OpenRouter client)
+- [x] Fail-fast environment variable validation at startup (`app/env.ts`)
+- [x] OpenRouter pure streaming function (`app/arena/lib/openrouter.ts`)
+- [x] Route handler with Arcjet protection (`app/api/chat/route.ts`)
+- [x] Clerk auth wiring with Next.js 16 `proxy.ts` and `ClerkProvider` in `app/layout.tsx`
+- [x] PostHog provider with session replay, heatmaps, App Router pageview tracking, and Clerk user identification (`app/posthog/`)
+- [x] Prisma initialized with PostgreSQL datasource and singleton client (`app/db.ts`)
+- [x] Environment example documented in `.env.example`
 
 ### 2. Coding standards & tooling
 

@@ -1,0 +1,17 @@
+// Prisma schema for LLM Arena
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Initial placeholder models (Feature 3 will expand the full data model)
+model User {
+  id        String   @id // Clerk user ID
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
