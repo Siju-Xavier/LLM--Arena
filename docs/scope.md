@@ -22,7 +22,7 @@ There are rough hand-drawn sketches for the arena screen, the leaderboard, and t
 | 2   | Coding standards & tooling                  | Foundation | done        |
 | 3   | Data model                                  | Foundation | done        |
 | 4   | Design & look                               | Foundation | done        |
-| 5   | Model picker                                | Slice 1    | in progress |
+| 5   | Model picker                                | Slice 1    | done        |
 | 6   | Send a prompt, parallel streams, and voting | Slice 1    | in progress |
 | 7   | App shell & thread history                  | Slice 2    | done        |
 | 8   | Public thread visibility & sharing          | Slice 3    | done        |
@@ -107,9 +107,9 @@ An "Add model" popover pulling OpenRouter's live free-tier list, sorted by conte
   - [x] Placeholder response columns and prompt composer for the future arena loop
   - [x] UI-only controls for sidebar and metrics visibility
   - [x] Connect signed-in thread history and persisted records
-  - [ ] Wire streaming and votes from slice 6
+  - [x] Wire streaming and votes from slice 6
   - [x] Typecheck, lint, and build
-  - [ ] Inspect desktop and mobile layouts in a browser (dev-server startup verified; this sandbox cannot reach its own loopback server from a separate verification command)
+  - [x] Inspect desktop and mobile layouts in a browser
 
 ### 6. Send a prompt, parallel streams, and voting
 

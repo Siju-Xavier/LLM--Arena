@@ -783,8 +783,10 @@
 }
 
 .composer-input {
-  width: 100%;
+  width: auto;
   min-height: 3.5rem;
+  min-width: 0;
+  flex: 1;
   resize: none;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1237,10 +1239,22 @@
 }
 
 @media (max-width: 640px) {
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
   .arena-shell,
   .sidebar-collapsed {
     display: block;
     height: 100vh;
+  }
+
+  .arena-workspace,
+  .prompt-composer {
+    width: 100%;
+    max-width: 100vw;
   }
 
   .arena-sidebar {
@@ -1310,8 +1324,14 @@
   }
 
   .arena-intro {
+    width: 100%;
     align-items: start;
     flex-direction: column;
+  }
+
+  .arena-intro > div {
+    width: 100%;
+    min-width: 0;
   }
 
   .response-grid {
@@ -1342,6 +1362,9 @@
   }
 
   .leaderboard-page {
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
     padding: 1rem;
   }
 
